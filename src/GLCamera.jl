@@ -29,7 +29,19 @@ function mousediff{T}(v0::(Bool, Vector2{T}, Vector2{T}),  clicked::Bool, pos::V
     end
     return (clicked, pos, Vector2(0.0))
 end
-
+function viewmatrix(v0, scroll_x, scroll_y, buttonset)
+	translatevec = Vec3(0f0)
+	if scroll_x == 0f0
+		if in(341, buttonset) # left strg
+			translatevec = Vec3(scroll_y*10f0, 0f0, 0f0)
+		else
+			translatevec = Vec3(0f0, scroll_y*10f0, 0f0)
+		end
+	else
+		translatevec = Vec3(scroll_x*10f0, scroll_y*10f0, 0f0)
+	end
+	v0 * translationmatrix(translatevec)	
+end
 
 #= 
 Creates an orthographic camera with the pixel perfect plane in z == 0
@@ -48,21 +60,7 @@ function OrthographicPixelCamera(inputs::Dict{Symbol, Any})
 	buttonspressed  = inputs[:buttonspressed]
 	
 	#Should be rather in Image coordinates
-	view = foldl(eye(Mat4), 
-				inputs[:scroll_x], inputs[:scroll_y], buttonspressed) do v0, scroll_x, scroll_y, buttonset
-
-		translatevec = Vec3(0f0)
-		if scroll_x == 0f0
-			if in(341, buttonset) # left strg
-				translatevec = Vec3(scroll_y*10f0, 0f0, 0f0)
-			else
-				translatevec = Vec3(0f0, scroll_y*10f0, 0f0)
-			end
-		else
-			translatevec = Vec3(scroll_x*10f0, scroll_y*10f0, 0f0)
-		end
-		v0 * translationmatrix(translatevec)	
-	end
+	view = foldl(viewmatrix, eye(Mat4), inputs[:scroll_x], inputs[:scroll_y], buttonspressed)
 
 	OrthographicCamera(
 				inputs[:window_size],
@@ -90,12 +88,12 @@ function OrthographicCamera(inputs::Dict{Symbol, Any})
 	clicked         = inputs[:mousebuttonspressed]
 	keypressed      = inputs[:buttonspressed]
 	
-	zoom 			= foldl((a,b) -> float32(a+(b*0.1f0)) , 1.0f0, inputs[:scroll_y])
+	zoom 			= foldl((a,b) -> Float32(a+(b*0.1f0)) , 1.0f0, inputs[:scroll_y])
 
 	#Should be rather in Image coordinates
 	normedposition 		= lift((a,b) -> Vector2((a./b[3:4])...), inputs[:mouseposition], inputs[:window_size])
 	clickedwithoutkeyL 	= lift((mb, kb) -> in(0, mb) && isempty(kb), Bool, clicked, keypressed)
-	translate 			= lift(x-> float32(x[3]), Vec2, # Extract the mouseposition from the diff tuple
+	translate 			= lift(x-> Float32(x[3]), Vec2, # Extract the mouseposition from the diff tuple
 							keepwhen(clickedwithoutkeyL, (false, Vector2(0.0), Vector2(0.0)), # Don't do unnecessary updates, so just signal when mouse is actually clicked
 								foldl(mousediff, (false, Vector2(0.0), Vector2(0.0)),  # Get the difference, starting when the mouse is down
 									clickedwithoutkeyL, normedposition)))
@@ -231,13 +229,13 @@ function PerspectiveCamera{T}(inputs::Dict{Symbol,Any}, eyeposition::Vector3{T},
 
 	speed = 50f0
 	xtheta = Input(0f0)
-	ytheta = lift(x-> float32(-x[2]) / speed, Float32, mousedraggdiffL)
-	ztheta = lift(x-> float32(x[1]) / speed, Float32, mousedraggdiffL)
+	ytheta = lift(x-> Float32(-x[2]) / speed, Float32, mousedraggdiffL)
+	ztheta = lift(x-> Float32(x[1]) / speed, Float32, mousedraggdiffL)
 
 
-	xtrans = lift(x-> float32(x*0.1f0), Float32, inputs[:scroll_y])
-	ytrans = lift(x-> -float32(x[1]) / speed, Float32, mousedraggdiffM)
-	ztrans = lift(x-> float32(x[2]) / speed, Float32, mousedraggdiffM)
+	xtrans = lift(x-> Float32(x*0.1f0), Float32, inputs[:scroll_y])
+	ytrans = lift(x-> -Float32(x[1]) / speed, Float32, mousedraggdiffM)
+	ztrans = lift(x-> Float32(x[2]) / speed, Float32, mousedraggdiffM)
 
 	fov 	= Input(41f0)
 

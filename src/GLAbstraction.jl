@@ -1,16 +1,26 @@
 module GLAbstraction
 
-using ImmutableArrays
+using Quaternions
+import Quaternions.normalize
+
+using AbstractGPUArray
+using FixedSizeArrays
+using GeometryTypes
 using ModernGL
 using Reactive
-using Quaternions
-using Color
 using FixedPointNumbers
+using ColorTypes
 using Compat
-import Images: imread, colorspace, Image, AbstractGray, RGB4, ARGB, Images
+#import Images: imread, colorspace, Image, AbstractGray, RGB4, ARGB, Images
 #import Lumberjack
 import Mustache
-import Base.delete!
+
+
+
+include("GLUtils.jl")
+export @gputime
+export @file_str
+export File
 
 
 include("GLInit.jl")
@@ -43,13 +53,36 @@ export Shape                    # Abstract shape type
 export setindex1D!              # Sets the index of an Array{FixedSizeVector, x}, making the FixedSizeVector accessible via an index
 export Style                    # Style Type, which is used to choose different visualization/editing styles via multiple dispatch
 export mergedefault!            # merges a style dict via a given style
+
+
+
+#Methods which got overloaded by GLExtendedFunctions.jl:
+import ModernGL.glShaderSource
+import ModernGL.glGetAttachedShaders
+import ModernGL.glGetActiveUniform
+import ModernGL.glGetActiveAttrib
+import ModernGL.glGetProgramiv
+import ModernGL.glGetIntegerv
+import ModernGL.glGenBuffers
+import ModernGL.glGetProgramiv
+import ModernGL.glGenVertexArrays
+import ModernGL.glGenTextures
+import ModernGL.glGenFramebuffers
+import ModernGL.glGetTexLevelParameteriv
+import ModernGL.glViewport
+import ModernGL.glGenRenderbuffers
+import ModernGL.glDeleteTextures
+import ModernGL.glDeleteVertexArrays
+import ModernGL.glDeleteBuffers
+
+
 include("GLExtendedFunctions.jl")
 export glTexImage
 
 include("GLUniforms.jl")
 export gluniform                # wrapper of all the OpenGL gluniform functions, which call the correct gluniform function via multiple dispatch. Example: gluniform(location, x::Matrix4x4) = gluniformMatrix4fv(location, x)
 export toglsltype_string        # infers a glsl type string from a julia type. Example: Matrix4x4 -> uniform mat4
-# Also exports Macro generated GLSL alike aliases for float32 Matrices and Vectors
+# Also exports Macro generated GLSL alike aliases for Float32 Matrices and Vectors
 # only difference to GLSL: first character is uppercase uppercase
 
 include("GLMatrixMath.jl")
@@ -77,6 +110,11 @@ export readshader
 export glsl_variable_access
 export createview
 export TemplateProgram # Creates a shader from a Mustache view and and a shader file, which uses mustache syntax to replace values.
+export @comp_str
+export @frag_str
+export @vert_str
+export @geom_str
+
 
 include("GLCamera.jl")
 export OrthographicCamera
@@ -92,7 +130,9 @@ export genquad
 export gencubenormals
 export mergemesh
 
-include("GLUtils.jl")
-export @gputime
 
+include("GLInfo.jl")
+export getUniformsInfo
+export getProgramInfo
+export getAttributesInfo
 end # module
