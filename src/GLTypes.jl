@@ -144,7 +144,14 @@ type RenderObject
     objectid = zero(GLushort)
 
     function RenderObject(data::Dict{Symbol, Any}, program::Signal{GLProgram}, bbs=Input(AABB(Vec3(0),Vec3(1))))
-
+        # Add an intercept tool to see with which args and where in the code
+        # are RenderObjects produced. Need to put macros to fully hide this
+        println("In RenderObject basic constructor for ID=",(objectid+1))
+        println("\t keys for data = ", sort(collect(keys(data))))
+        Base.show_backtrace(STDOUT,backtrace())
+        println("\nEnd of report for ID=", (objectid+1))
+        # End of addition
+        
         objectid             += GLushort(1)
         program              = program.value
         buffers              = filter((key, value) -> isa(value, GLBuffer), data)
