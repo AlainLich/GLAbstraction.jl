@@ -5,8 +5,8 @@ function Base.show(io::IO, obj::RenderObject)
     println(io, "RenderObject with ID: ", obj.id)
 
     println(io, "uniforms: ")
-    for (name, uniform) in obj.uniforms
-        println(io, "   ", name, "\n      ", uniform)
+    for name in sort(collect(keys( obj.uniforms)))
+        println(io, "   ", name, "\n      ", obj.uniforms[name])
     end
     println(io, "vertexarray length: ", obj.vertexarray.length)
     println(io, "vertexarray indexlength: ", obj.vertexarray.indexlength)

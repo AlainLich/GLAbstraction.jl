@@ -147,11 +147,10 @@ type RenderObject
         # Add an intercept tool to see with which args and where in the code
         # are RenderObjects produced. Need to put macros to fully hide this
         println("In RenderObject basic constructor for ID=",(objectid+1))
-        println("\t keys for data = ", sort(collect(keys(data))))
         Base.show_backtrace(STDOUT,backtrace())
-        println("\nEnd of report for ID=", (objectid+1))
-        # End of addition
-        
+        println("\n\t keys for data               = ", sort(collect(keys(data))))
+        ## end addition intercept tool 1 ##
+
         objectid             += GLushort(1)
         program              = program.value
         buffers              = filter((key, value) -> isa(value, GLBuffer), data)
@@ -169,6 +168,13 @@ type RenderObject
             end
         end # only use active uniforms && check the type
 
+        ## Addition intercept tool 2 ##
+        println("\t keys for optimized uniforms = ", sort(collect(keys(optimizeduniforms))))
+        cku  = collect(keys(uniforms))
+        println("\t other keys in uniforms      = ", sort( filter( x::Symbol-> !in(x,cku), cku)))
+        println("\nEnd of report for ID=", objectid)
+        ## end addition intercept tool 1 ##
+        
         return new(optimizeduniforms, uniforms, vertexarray, Dict{Function, Tuple}(), Dict{Function, Tuple}(), objectid, bbs)
     end
 end
